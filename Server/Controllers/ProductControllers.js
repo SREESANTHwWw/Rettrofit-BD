@@ -25,7 +25,7 @@ Router.post(
 
       // Store multiple file URLs
       const fileUrls = req.files.map(
-        (file) => `https://rettrofit-bd-1.onrender.com/uploads/${file.filename}`
+        (file) => `https://rettrofit-bd.onrender.com/uploads/${file.filename}`
       );
 
       // Create new product
