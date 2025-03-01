@@ -4,6 +4,7 @@ const adminRouter = require("./Controllers/AdminController")
 const CategoryRoute = require("./Controllers/CategoryContoller")
 const ProductRoute = require("./Controllers/ProductControllers")
 const OrderRoute = require("./Controllers/OrderController")
+const ServicesRoute =require("./Controllers/ServicesController")
 const cors =require("cors")
 const path = require("path")
 
@@ -23,6 +24,7 @@ app.use('/api/v1/', adminRouter)
 app.use('/api/v1/', CategoryRoute)
 app.use('/api/v1/', ProductRoute)
 app.use('/api/v1/', OrderRoute)
+app.use('/api/v1/', ServicesRoute)
 app.use('/uploads', express.static(path.join(__dirname, "uploads")))
 
 
