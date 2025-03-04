@@ -3,12 +3,13 @@ const CategoryModel = require("../Model/CategoryModel");
 const CatchAsyncError = require("../Middlewares/CatchAsyncError");
 const ErrorHandler = require("../Utils/ErrorHandler");
 const ProductModel = require("../Model/ProductModel");
-const { upload } = require("../Multer");
+const  upload  = require("../Multer");
 const Router = express.Router();
+const cloudinary = require("cloudinary").v2;
 
 Router.post(
   "/create-product",
-  upload.array("productimages", 5), // 🔹 Fixed the field name to match frontend
+  upload.array("productimages", 5), // s
   async (req, res, next) => {
     try {
       const { productname, undercategory, description } = req.body;
@@ -23,9 +24,14 @@ Router.post(
         return res.status(400).json({ message: "Product name already exists" });
       }
 
-      // Store multiple file URLs
-      const fileUrls = req.files.map(
-        (file) => `https://rettrofit-bd.onrender.com/uploads/${file.filename}`
+      // 🔹 Upload each image to Cloudinary and store URLs
+      const fileUrls = await Promise.all(
+        req.files.map(async (file) => {
+          const result = await cloudinary.uploader.upload(file.path, {
+            folder: "products", // Cloudinary folder
+          });
+          return result.secure_url; // Return Cloudinary URL
+        })
       );
 
       // Create new product
@@ -33,22 +39,24 @@ Router.post(
         productname,
         undercategory,
         description,
-        productimages: fileUrls, // 🔹 Store as an array
+        productimages: fileUrls, // 
       };
 
       const productCreated = await ProductModel.create(productData);
-      res
-        .status(201)
-        .json({ msg: "Product created successfully", product: productCreated });
+
+      res.status(201).json({
+        msg: "Product created successfully",
+        product: productCreated,
+      });
     } catch (error) {
-      return next(new ErrorHandler(error.message, 400));
+      return res.status(500).json({ error: error.message });
     }
   }
 );
 
 Router.get(
   "/get-product",
-  CatchAsyncError(async (req, res) => {
+  CatchAsyncError(async (req, res,next) => {
     try {
       const productget = await ProductModel.find();
       res.status(200).json({ msg: "product get success", productget });
@@ -59,7 +67,7 @@ Router.get(
 );
 Router.get(
   "/get-One-product/:id",
-  CatchAsyncError(async (req, res) => {
+  CatchAsyncError(async (req, res,next) => {
     try {
       const productget = await ProductModel.find({ _id: req.params.id });
       res.status(200).json({ msg: "product get success", productget });
@@ -81,6 +89,23 @@ Router.get(
     }
   })
 );
+
+Router.get('/get-related-product/:category_id/:product_id', CatchAsyncError(async (req, res,next) => {  
+  try {
+    const {category_id , product_id} = req.params
+
+    const relatedProducts = await ProductModel.find({
+      undercategory: category_id,
+      _id: { $ne: product_id }, // Exclude the current product
+    }).limit(6);
+
+    res.status(200).json({ msg: "product get success", relatedProducts });
+    
+  } catch (error) {
+     return next(new ErrorHandler(error.message,400))
+  }
+    
+}))
 Router.patch(
   "/update-product/:id",
   upload.array("productimages", 5),

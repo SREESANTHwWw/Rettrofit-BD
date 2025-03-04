@@ -31,7 +31,9 @@ AdminSchema.pre("save", async function(next){
   } )
   AdminSchema.methods.getJwtToken=function(){
     return jwt.sign({
-      id:this._id
+      id:this._id,
+      username:this.username,
+      role:this.role
     },process.env.JWT_SECRET_KEY,{
         expiresIn:process.env.JWT_EXPIRES,
     });

@@ -25,24 +25,31 @@ Router.post('/create-admin', CatchAsyncError( async(req,res,next)=>{
     }
 }))
 
-Router.post('/login-admin',CatchAsyncError( async(req,res)=>{
-    try {
-        const {username,password} = req.body
+Router.post(
+    "/login-admin",
+    CatchAsyncError(async (req, res, next) => {
+        try {
+            const { username, password } = req.body;
 
-        const user = await AdminModel.findOne({username}).select("+password")
-        if(!user){
-           return res.status(404).json({ms:"User not Found"})
-        }
-        const isValidPassword = await user.comparePassword(password)
-        if(!isValidPassword){
-           return res.status(401).json({msg:"password Error"})
-        }
-        sendToken(user, 201, res);
-    } catch (error) {
+            // Find user by username
+            const user = await AdminModel.findOne({ username }).select("+password");
+            if (!user) {
+                return res.status(404).json({ msg: "User not found" });
+            }
 
-   return next(new ErrorHandler(error.message,400))
-        
-    }
-}))
+            // Validate password
+            const isValidPassword = await user.comparePassword(password);
+            if (!isValidPassword) {
+                return res.status(401).json({ msg: "Invalid password" });
+            }
+
+            // Send JWT token
+            sendToken(user, 200, res);
+        } catch (error) {
+            console.error("Login Error:", error);
+            return res.status(500).json({ msg: "Server error" });
+        }
+    })
+);
 
 module.exports= Router

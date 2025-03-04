@@ -4,7 +4,7 @@ const ProductSchema = new mongoose.Schema({
     
     productname: {
         type: String,
-        tirm:true,
+        trim:true,
     },
     productimages:{
         type:[String]
@@ -12,10 +12,6 @@ const ProductSchema = new mongoose.Schema({
     description: {
         type: String,
         tirm:true,      
-    },
-    reviews: {
-        type: Number,
-        default: 0  
     },
     undercategory: {
         type: mongoose.Schema.Types.ObjectId,
@@ -26,6 +22,6 @@ const ProductSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     }
-})
+},{ timestamps: true })
 
 module.exports = mongoose.model("Product", ProductSchema)

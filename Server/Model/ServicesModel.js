@@ -7,6 +7,14 @@ const ServicesSchema = new mongoose.Schema({
     description: {
         type: String,
     },
+    ServicesImages: {
+        type:[String]
+    },
+    underService:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref:"Services",
+        default: null
+    },
     createdAt: {        
         type: Date,
         default: Date.now
