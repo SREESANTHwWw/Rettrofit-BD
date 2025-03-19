@@ -10,6 +10,9 @@ const ServicesSchema = new mongoose.Schema({
     ServicesImages: {
         type:[String]
     },
+    hasSubService: {
+        type: Boolean,
+    },
     underService:{
         type: mongoose.Schema.Types.ObjectId,
         ref:"Services",

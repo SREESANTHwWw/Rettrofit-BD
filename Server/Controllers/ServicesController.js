@@ -10,7 +10,7 @@ const mongoose = require("mongoose");
 
 Router.post('/create-service',upload.array("ServicesImages",5), CatchAsyncError(async(req,res,next)=>{
     try{
-        let {servicename,description,underService} = req.body;
+        let {servicename,description,underService,hasSubService} = req.body;
 
         // Check if service already exists
         const serviceExists = await ServicesModel.findOne({servicename});
@@ -29,12 +29,12 @@ Router.post('/create-service',upload.array("ServicesImages",5), CatchAsyncError(
       if (underService === "" || !mongoose.Types.ObjectId.isValid(underService)) {
         underService = null; // Set to null if empty
       }
-
         // Create new service
         const serviceData = {
             servicename,
             description,
             underService,
+            hasSubService,
             ServicesImages:fileUrls
         }
 
@@ -69,6 +69,33 @@ Router.get(`/get-one-service/:id`,CatchAsyncError(async(req,res,next)=>{
     }catch(error){
         return next(new ErrorHandler(error.message,400));
     }    
+}))
+Router.delete('/delete-service/:id',CatchAsyncError(async(req,res,next)=>{
+    try {
+        const ServiceDlt = await ServicesModel.findByIdAndDelete(req.params.id)
+        res.status(200).json({msg:"Service deleted successfully",ServiceDlt});
+        
+    } catch (error) {
+        return next( new ErrorHandler(error.message,400))
+        
+    }
+}))
+
+Router.get(`/get-related-service/:mainService_id/:service_id`,CatchAsyncError(async(req,res,next)=>{
+    try {
+        const {mainService_id , service_id} = req.params
+        const relatedServices = await ServicesModel.find({
+            underService: mainService_id,
+          _id: { $ne: service_id }, // Exclude the current service
+        }).limit(6);
+        if(!relatedServices){
+            return next(new ErrorHandler("Services not found",400))
+        }
+        res.status(200).json({ msg: "Service get success", relatedServices });
+        
+    } catch (error) {
+         return next (new ErrorHandler(error.message,400))
+    }
 }))
 
 module.exports = Router;
